@@ -19,13 +19,17 @@ import seaborn as sns
 # noinspection PyUnresolvedReferences
 import abu_local_env
 import abupy
-from abupy import six, xrange, range, reduce, map, filter, partial
+from abupy import six, xrange, range, reduce, map, filter, partial, EMarketDataFetchMode
 from abupy import ABuSymbolPd
+from abupy.MarketBu.ABuDataFeed import MongoApi
 
 warnings.filterwarnings('ignore')
 sns.set_context(rc={'figure.figsize': (14, 7)})
 # 使用沙盒数据，目的是和书中一样的数据环境
-abupy.env.enable_example_env_ipython()
+abupy.env.disable_example_env_ipython()
+abupy.env.g_data_fetch_mode = EMarketDataFetchMode.E_DATA_FETCH_FORCE_NET
+abupy.env.g_private_data_source = MongoApi
+
 
 
 """
@@ -679,7 +683,7 @@ def sample_241_1():
 
 
 # 两年的TSLA收盘数据 to list
-g_price_array = ABuSymbolPd.make_kl_df('TSLA', n_folds=2).close.tolist()
+g_price_array = ABuSymbolPd.make_kl_df('000001', n_folds=2).close.tolist()
 # 两年的TSLA收盘日期 to list，这里的写法不考虑效率，只做演示使用
 g_date_array = ABuSymbolPd.make_kl_df('TSLA', n_folds=2).date.tolist()
 g_trade_days = StockTradeDays(g_price_array, 0, g_date_array)
@@ -906,13 +910,13 @@ def sample_25():
         pdb.set_trace()
 
 if __name__ == "__main__":
-    sample_211()
+    # sample_211()
     # sample_212()
     # sample_221()
     # sample_222()
     # sample_223()
     # sample_224()
-    # sample_231()
+    sample_231()
     # sample_232()
     # sample_233_1()
     # sample_233_2()

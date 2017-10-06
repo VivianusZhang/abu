@@ -16,12 +16,13 @@ import math
 import sqlite3 as sqlite
 
 import pandas as pd
+from pymongo import MongoClient
 
 from ..CoreBu.ABuEnv import EMarketTargetType, EMarketSubType
 from ..CoreBu import ABuEnv
 from ..MarketBu import ABuNetWork
 from ..MarketBu.ABuDataBase import StockBaseMarket, SupportMixin, FuturesBaseMarket, TCBaseMarket
-from ..MarketBu.ABuDataParser import BDParser, TXParser, NTParser, SNUSParser
+from ..MarketBu.ABuDataParser import BDParser, TXParser, NTParser, SNUSParser, MongoParser
 from ..MarketBu.ABuDataParser import SNFuturesParser, SNFuturesGBParser, HBTCParser
 from ..UtilBu import ABuStrUtil, ABuDateUtil, ABuMd5
 from ..UtilBu.ABuDTUtil import catch_error
@@ -440,3 +441,24 @@ class HBApi(TCBaseMarket, SupportMixin):
     def minute(self, *args, **kwargs):
         """分钟k线接口"""
         raise NotImplementedError('HBApi minute NotImplementedError!')
+
+
+class MongoApi(StockBaseMarket, SupportMixin):
+
+    def __init__(self, symbol):
+        """
+        :param symbol: Symbol类型对象
+        """
+        super(TXApi, self).__init__(symbol)
+        # 设置数据源解析对象类
+        self.data_parser_cls = MongoParser
+
+    def kline(self, n_folds=2, start=None, end=None):
+        client = MongoClient('localhost', 27017)
+        db = client['stock']
+        data = pd.DataFrame(list(db.instrumentDailyData.find(
+            {'code': self._symbol}, {'date': {'$lte': start}}).sort('date', pymongo.ASCENDING).limit(period)))
+        return data
+
+    def minute(self, *args, **kwargs):
+        raise NotImplementedError('MongoApi minute NotImplementedError!')
